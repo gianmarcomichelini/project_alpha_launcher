@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
-const { exec, execSync } = require('child_process');
+const { spawn, execSync } = require('child_process');
 const AdmZip = require('adm-zip');
 
 let mainWindow;
@@ -93,7 +93,16 @@ ipcMain.handle('check-update', async () => {
 
 // Download and extract the game
 ipcMain.handle('download-game', async (event, { url, version }) => {
-    if (!fs.existsSync(GAME_DIR)) fs.mkdirSync(GAME_DIR, { recursive: true });
+    
+    // --- NEW: CLEANUP OLD GAME ---
+    // If the folder already exists, delete it entirely to ensure a clean install
+    if (fs.existsSync(GAME_DIR)) {
+        console.log("Removing old game files before downloading...");
+        fs.rmSync(GAME_DIR, { recursive: true, force: true });
+    }
+    // Create a fresh directory
+    fs.mkdirSync(GAME_DIR, { recursive: true });
+    // ------------------------------
 
     const zipPath = path.join(GAME_DIR, 'update.zip');
     const writer = fs.createWriteStream(zipPath);
@@ -136,9 +145,11 @@ ipcMain.handle('download-game', async (event, { url, version }) => {
                             
                             const macosDirPath = path.join(appPath, 'Contents', 'MacOS');
                             if (fs.existsSync(macosDirPath)) {
-                                const macFiles = fs.readdirSync(macosDirPath);
-                                if (macFiles.length > 0) {
-                                    fs.chmodSync(path.join(macosDirPath, macFiles[0]), '755');
+                                // Ignore hidden files like .DS_Store
+                                for (const file of fs.readdirSync(macosDirPath)) {
+                                    if (!file.startsWith('.')) {
+                                        fs.chmodSync(path.join(macosDirPath, file), '755');
+                                    }
                                 }
                             }
                         }
@@ -155,24 +166,62 @@ ipcMain.handle('download-game', async (event, { url, version }) => {
     }
 });
 
-// Find and launch the executable
+// Find and launch the executable using spawn (detached)
 ipcMain.handle('launch-game', async () => {
     const platform = process.platform;
-    let command = "";
+
+    console.log("Attempting to launch the game...");
 
     try {
         if (platform === 'win32') {
             const exePath = findGameExecutable(GAME_DIR, '.exe');
-            if (exePath) command = `"${exePath}"`;
+            if (exePath) {
+                console.log(`Found executable: ${exePath}`);
+                
+                // Get the directory of the .exe so Godot can find its .pck files
+                const exeDir = path.dirname(exePath); 
+                
+                const child = spawn(exePath, [], { 
+                    detached: true, 
+                    stdio: 'ignore',
+                    cwd: exeDir 
+                });
+
+                child.on('error', (err) => console.error("Failed to start the game process:", err));
+                child.unref();
+                app.quit();
+            } else {
+                console.error("Error: Could not find any .exe file.");
+            }
         } else if (platform === 'darwin') {
             const appPath = findGameExecutable(GAME_DIR, '.app');
-            if (appPath) command = `open "${appPath}"`;
-        }
+            if (appPath) {
+                console.log(`Found app bundle: ${appPath}`);
+                
+                // Ensure permissions are correct before launch
+                try { execSync(`xattr -rc "${appPath}"`); } catch(e) {}
+                const macosDirPath = path.join(appPath, 'Contents', 'MacOS');
+                if (fs.existsSync(macosDirPath)) {
+                    for (const file of fs.readdirSync(macosDirPath)) {
+                        if (!file.startsWith('.')) {
+                            fs.chmodSync(path.join(macosDirPath, file), '755');
+                        }
+                    }
+                }
 
-        if (command) {
-            exec(command, () => app.quit());
+                const child = spawn('open', [appPath], { 
+                    detached: true, 
+                    stdio: 'ignore' 
+                });
+
+                child.on('error', (err) => console.error("Failed to start the Mac app:", err));
+                child.unref();
+                app.quit();
+            } else {
+                console.error("Error: Could not find any .app file.");
+            }
         }
     } catch (e) {
-        console.error("Launch failed.", e);
+        console.error("Launch failed with a critical error:", e);
     }
 });
