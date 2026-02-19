@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>J3YCEN — Launcher</title>
+    <title>Spastic Launcher</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
 
@@ -41,13 +41,28 @@
         }
 
         /* ─── Animated background ─── */
+
+        /* New Background Image Layer */
+        .bg-image {
+            position: absolute;
+            inset: 0;
+            /* Pointing to the local image inside the assets folder */
+            background-image: url('./assets/background.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.50;
+            z-index: 0;
+            pointer-events: none;
+        }
+
         .bg-grid {
             position: absolute; inset: 0;
             background-image:
-                linear-gradient(rgba(224,32,32,0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(224,32,32,0.04) 1px, transparent 1px);
+                    linear-gradient(rgba(224,32,32,0.04) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(224,32,32,0.04) 1px, transparent 1px);
             background-size: 40px 40px;
             animation: gridMove 20s linear infinite;
+            z-index: 1;
         }
 
         @keyframes gridMove {
@@ -59,6 +74,7 @@
             position: absolute; inset: 0;
             background: radial-gradient(ellipse at center, transparent 30%, #080a0f 100%);
             pointer-events: none;
+            z-index: 2;
         }
 
         .bg-glow {
@@ -69,6 +85,7 @@
             background: radial-gradient(ellipse, rgba(224,32,32,0.08) 0%, transparent 70%);
             filter: blur(40px);
             animation: pulse 4s ease-in-out infinite;
+            z-index: 3;
         }
 
         @keyframes pulse {
@@ -80,14 +97,15 @@
         .scanlines {
             position: absolute; inset: 0;
             background: repeating-linear-gradient(
-                to bottom,
-                transparent,
-                transparent 2px,
-                rgba(0,0,0,0.12) 2px,
-                rgba(0,0,0,0.12) 4px
+                    to bottom,
+                    transparent,
+                    transparent 2px,
+                    rgba(0,0,0,0.12) 2px,
+                    rgba(0,0,0,0.12) 4px
             );
             pointer-events: none;
             opacity: 0.4;
+            z-index: 4;
         }
 
         /* ─── Main container ─── */
@@ -192,6 +210,7 @@
             position: relative;
             overflow: hidden;
             animation: fadeUp 0.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+            backdrop-filter: blur(4px);
         }
 
         @keyframes fadeUp {
@@ -226,6 +245,31 @@
             border-bottom: 2px solid var(--red);
             border-right: 2px solid var(--red);
             opacity: 0.7;
+        }
+
+        /* ─── Game Header Row ─── */
+        .game-header {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .game-subtitle {
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+        }
+
+        .game-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 22px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 12px rgba(255, 255, 255, 0.1);
         }
 
         /* ─── Status area ─── */
@@ -437,166 +481,177 @@
 </head>
 <body>
 
-    <div class="bg-grid"></div>
-    <div class="bg-glow"></div>
-    <div class="bg-vignette"></div>
-    <div class="scanlines"></div>
+<div class="bg-image"></div>
 
-    <div class="launcher">
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+<div class="bg-vignette"></div>
+<div class="scanlines"></div>
 
-        <div class="logo-area">
-            <div class="logo-title">SPASTIC GAMES</div>
-            <div class="logo-divider">
-                <div class="logo-divider-line"></div>
-                <div class="logo-divider-dot"></div>
-                <div class="logo-divider-line"></div>
-            </div>
+<div class="launcher">
+
+    <div class="logo-area">
+        <div class="logo-title">SPASTIC GAMES</div>
+        <div class="logo-divider">
+            <div class="logo-divider-line"></div>
+            <div class="logo-divider-dot"></div>
+            <div class="logo-divider-line"></div>
         </div>
-
-        <div class="card">
-            <div class="corner-br"></div>
-
-            <div class="status-row">
-                <div class="status-indicator" id="status-indicator"></div>
-                <div id="status">Inizializzazione in corso...</div>
-            </div>
-
-            <div class="version-info" id="version-info" style="display:none">
-                <div class="version-block">
-                    <div class="version-label">Installata</div>
-                    <div class="version-value" id="v-local">—</div>
-                </div>
-                <div class="version-block">
-                    <div class="version-label">Disponibile</div>
-                    <div class="version-value highlight" id="v-latest">—</div>
-                </div>
-            </div>
-
-            <div class="progress-wrap">
-                <div class="progress-label">
-                    <div class="progress-label-text">Download</div>
-                    <div id="progress-percent">0%</div>
-                </div>
-                <div class="progress-container">
-                    <div id="progress-bar" class="progress-bar"></div>
-                </div>
-            </div>
-
-            <div class="btn-wrapper">
-                <button id="btn-action" disabled><span>Attendi...</span></button>
-            </div>
-        </div>
-
-        <div class="footer">
-            <div class="ticker">
-                <div class="ticker-dot"></div>
-                <span>Sistema Online</span>
-            </div>
-            <span>Launcher v1.0</span>
-        </div>
-
     </div>
 
-    <script>
-        // ─── UI helpers ───────────────────────────────────────────
-        const btnAction    = document.getElementById('btn-action');
-        const statusEl     = document.getElementById('status');
-        const statusDot    = document.getElementById('status-indicator');
-        const progressBar  = document.getElementById('progress-bar');
-        const progressPct  = document.getElementById('progress-percent');
-        const versionInfo  = document.getElementById('version-info');
-        const vLocal       = document.getElementById('v-local');
-        const vLatest      = document.getElementById('v-latest');
+    <div class="card">
+        <div class="corner-br"></div>
 
-        function setStatus(msg, type = 'active') {
-            statusEl.textContent = msg;
-            statusEl.className   = type;
-            statusDot.className  = `status-indicator ${type}`;
+        <div class="game-header">
+            <div class="game-subtitle"> Stai per giocare a: </div>
+            <div class="game-title"> ALPHA GAME</div>
+        </div>
+
+        <div class="status-row">
+            <div class="status-indicator" id="status-indicator"></div>
+            <div id="status">Inizializzazione in corso...</div>
+        </div>
+
+        <div class="version-info" id="version-info" style="display:none">
+            <div class="version-block">
+                <div class="version-label">Installata</div>
+                <div class="version-value" id="v-local">—</div>
+            </div>
+            <div class="version-block">
+                <div class="version-label">Disponibile</div>
+                <div class="version-value" id="v-latest">—</div>
+            </div>
+        </div>
+
+        <div class="progress-wrap">
+            <div class="progress-label">
+                <div class="progress-label-text">Download</div>
+                <div id="progress-percent">0%</div>
+            </div>
+            <div class="progress-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+        </div>
+
+        <div class="btn-wrapper">
+            <button id="btn-action" disabled><span>Attendi...</span></button>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="ticker">
+            <div class="ticker-dot"></div>
+            <span>Sei Online</span>
+        </div>
+        <span> Spastic Launcher &copy </span>
+    </div>
+
+</div>
+
+<script>
+    // ─── UI helpers ───────────────────────────────────────────
+    const btnAction    = document.getElementById('btn-action');
+    const statusEl     = document.getElementById('status');
+    const statusDot    = document.getElementById('status-indicator');
+    const progressBar  = document.getElementById('progress-bar');
+    const progressPct  = document.getElementById('progress-percent');
+    const versionInfo  = document.getElementById('version-info');
+    const vLocal       = document.getElementById('v-local');
+    const vLatest      = document.getElementById('v-latest');
+
+    function setStatus(msg, type = 'active') {
+        statusEl.textContent = msg;
+        statusEl.className   = type;
+        statusDot.className  = `status-indicator ${type}`;
+    }
+
+    function setProgress(p) {
+        progressBar.style.width = p + '%';
+        progressPct.textContent = p + '%';
+        if (p > 0) {
+            progressPct.classList.add('visible');
+            progressBar.classList.add('active');
+        }
+        if (p >= 100) progressBar.classList.remove('active');
+    }
+
+    function setBtnText(txt) {
+        btnAction.querySelector('span').textContent = txt;
+    }
+
+    // ─── Logic (same as original renderer.js) ─────────────────
+    let downloadUrl   = "";
+    let latestVersion = "";
+
+    async function init() {
+        setStatus("Controllo aggiornamenti...", 'active');
+        const info = await window.launcherAPI.checkUpdate();
+
+        if (info.error) {
+            setStatus(info.message, 'error');
+            return;
         }
 
-        function setProgress(p) {
-            progressBar.style.width = p + '%';
-            progressPct.textContent = p + '%';
-            if (p > 0) {
-                progressPct.classList.add('visible');
-                progressBar.classList.add('active');
-            }
-            if (p >= 100) progressBar.classList.remove('active');
-        }
+        // Show version panel
+        vLocal.textContent  = info.localVersion  || '—';
+        vLatest.textContent = info.latestVersion  || '—';
+        versionInfo.style.display = 'flex';
 
-        function setBtnText(txt) {
-            btnAction.querySelector('span').textContent = txt;
-        }
+        if (info.isUpToDate) {
+            setStatus(`Pronto`, 'success');
+            setProgress(100);
+            setBtnText('Gioca');
+            btnAction.disabled = false;
+            btnAction.onclick  = () => window.launcherAPI.launchGame();
 
-        // ─── Logic (same as original renderer.js) ─────────────────
-        let downloadUrl   = "";
-        let latestVersion = "";
+        } else if (info.assetUrl) {
+            downloadUrl   = info.assetUrl;
+            latestVersion = info.latestVersion;
 
-        async function init() {
-            setStatus("Controllo aggiornamenti...", 'active');
-            const info = await window.launcherAPI.checkUpdate();
-
-            if (info.error) {
-                setStatus(info.message, 'error');
-                return;
-            }
-
-            // Show version panel
-            vLocal.textContent  = info.localVersion  || '—';
-            vLatest.textContent = info.latestVersion  || '—';
-            versionInfo.style.display = 'flex';
-
-            if (info.isUpToDate) {
-                setStatus(`Pronto — v${info.localVersion}`, 'success');
-                setProgress(100);
-                setBtnText('Gioca');
-                btnAction.disabled = false;
-                btnAction.onclick  = () => window.launcherAPI.launchGame();
-
-            } else if (info.assetUrl) {
-                downloadUrl   = info.assetUrl;
-                latestVersion = info.latestVersion;
-
-                if (info.localVersion) {
-                    setStatus(`Aggiornamento disponibile`, 'active');
-                    setBtnText('Aggiorna');
-                } else {
-                    setStatus(`Prima installazione`, 'active');
-                    setBtnText('Scarica Gioco');
-                }
-                btnAction.disabled = false;
-                btnAction.onclick  = startDownload;
-
+            if (info.localVersion) {
+                setStatus(`Aggiornamento disponibile`, 'active');
+                setBtnText('Aggiorna');
             } else {
-                setStatus("Nessun asset compatibile trovato.", 'error');
+                setStatus(`Prima installazione`, 'active');
+                setBtnText('Scarica Gioco');
             }
+            btnAction.disabled = false;
+            btnAction.onclick  = startDownload;
+
+        } else {
+            setStatus("Nessun asset compatibile trovato.", 'error');
         }
+    }
 
-        async function startDownload() {
-            btnAction.disabled = true;
-            setStatus("Download in corso...", 'active');
-            setProgress(0);
+    async function startDownload() {
+        btnAction.disabled = true;
+        setStatus("Download in corso...", 'active');
+        setProgress(0);
 
-            window.launcherAPI.onProgress((percent) => {
-                setProgress(percent);
-                setStatus(`Scaricamento... ${percent}%`, 'active');
-            });
+        window.launcherAPI.onProgress((percent) => {
+            setProgress(percent);
+            setStatus(`Scaricamento... ${percent}%`, 'active');
+        });
 
-            try {
-                await window.launcherAPI.downloadGame(downloadUrl, latestVersion);
-                setStatus("Installazione completata!", 'success');
-                setProgress(100);
-                setBtnText('Gioca Ora');
-                btnAction.disabled = false;
-                btnAction.onclick  = () => window.launcherAPI.launchGame();
-            } catch (err) {
-                setStatus("Errore durante il download.", 'error');
-                btnAction.disabled = false;
-                setBtnText('Riprova');
-            }
+        try {
+            await window.launcherAPI.downloadGame(downloadUrl, latestVersion);
+
+            // Immediately update the local version text on screen after a successful download
+            vLocal.textContent = latestVersion;
+
+            setStatus("Installazione completata!", 'success');
+            setProgress(100);
+            setBtnText('Gioca Ora');
+            btnAction.disabled = false;
+            btnAction.onclick  = () => window.launcherAPI.launchGame();
+        } catch (err) {
+            setStatus("Errore durante il download.", 'error');
+            btnAction.disabled = false;
+            setBtnText('Riprova');
         }
+    }
 
-        init();
-    </script>
+    init();
+</script>
 </body>
 </html>
