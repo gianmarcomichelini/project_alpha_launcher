@@ -1,31 +1,42 @@
 {
-  "name": "game-launcher",
+  "name": "error-launcher",
   "version": "1.0.0",
-  "description": "Auto-updating launcher for Project Alpha",
-  "author": "J3YCEN",
+  "author": "gim&jeycen",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder",
-    "build:mac": "electron-builder --mac",
-    "build:win": "electron-builder --win"
+    "build:all": "npm run build:win && npm run build:mac && npm run build:linux",
+    "build:win": "electron-builder --win -c.directories.output=dist/windows",
+    "build:mac": "electron-builder --mac -c.directories.output=dist/mac",
+    "build:linux": "electron-builder --linux -c.directories.output=dist/linux"
   },
   "build": {
-    "appId": "com.j3ycen.projectalpha",
-    "productName": "Project Alpha",
+    "appId": "com.jeycen.launcher",
+    "productName": "Spastic Launcher",
     "directories": {
       "output": "dist"
     },
+    "files": [
+      "**/*",
+      "!dist/**/*"
+    ],
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "assets/icon.ico"
     },
     "mac": {
-      "target": "dmg"
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png"
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico"
     }
   },
   "dependencies": {
