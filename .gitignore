@@ -1,0 +1,75 @@
+# ==========================================
+# 1. Node.js & Dependencies
+# ==========================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+
+# ==========================================
+# 2. Electron-Builder & Build Outputs
+# ==========================================
+# Ignores the folders where your compiled apps are saved
+dist/
+dist-zip/
+out/
+release/
+build/
+
+# ==========================================
+# 3. Compiled Binaries & Installers
+# ==========================================
+# Prevents accidentally uploading massive files if they end up outside the dist folder
+*.exe
+*.dmg
+*.pkg
+*.app
+*.AppImage
+*.deb
+*.rpm
+*.tar.gz
+*.zip
+
+# ==========================================
+# 4. OS-Specific Hidden Files
+# ==========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ==========================================
+# 5. Environment Variables & Secrets
+# ==========================================
+# Prevents uploading files containing tokens or passwords (if you use them in the future)
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# ==========================================
+# 6. IDE & Editor Workspaces
+# ==========================================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ==========================================
+# 7. App-Specific Temporary Files
+# ==========================================
+# Just in case you test downloading/extracting locally in the project folder
+Game/
+update.zip
