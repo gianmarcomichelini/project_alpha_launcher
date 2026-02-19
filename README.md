@@ -9,6 +9,12 @@ cd project_alpha_launcher
 npm install
 ```
 
+## Dev
+```bash
+npm start
+```
+
+
 ## Build
 
 ```bash
