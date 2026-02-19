@@ -3,69 +3,601 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Launcher</title>
+    <title>J3YCEN — Launcher</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            text-align: center; 
-            padding: 50px; 
-            background-color: #1e1e1e; 
-            color: #fff; 
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --red: #e02020;
+            --red-glow: rgba(224, 32, 32, 0.5);
+            --red-dim: rgba(224, 32, 32, 0.15);
+            --bg: #080a0f;
+            --surface: rgba(255,255,255,0.03);
+            --border: rgba(255,255,255,0.07);
+            --text: #c8d0e0;
+            --text-dim: rgba(200,208,224,0.4);
         }
-        
-        /* Progress bar container */
-        .progress-container { 
-            width: 80%; 
-            background-color: #444; 
-            margin: 30px auto; 
-            border-radius: 8px; 
-            overflow: hidden; 
-            height: 24px; 
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); 
+
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden;
         }
-        
-        .progress-bar { 
-            width: 0%; 
-            height: 100%; 
-            background-color: #4caf50; 
-            transition: width 0.3s ease; 
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-app-region: drag;
         }
-        
-        /* Main button styles */
-        button { 
-            padding: 12px 24px; 
-            font-size: 16px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            border: none; 
-            border-radius: 6px; 
-            background-color: #007acc; 
-            color: white; 
-            transition: background-color 0.2s; 
+
+        /* ─── Animated background ─── */
+        .bg-grid {
+            position: absolute; inset: 0;
+            background-image:
+                linear-gradient(rgba(224,32,32,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(224,32,32,0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: gridMove 20s linear infinite;
         }
-        
-        button:hover:not(:disabled) { 
-            background-color: #0098ff; 
+
+        @keyframes gridMove {
+            from { background-position: 0 0; }
+            to   { background-position: 40px 40px; }
         }
-        
-        button:disabled { 
-            background-color: #555; 
-            cursor: not-allowed; 
-            color: #aaa; 
+
+        .bg-vignette {
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at center, transparent 30%, #080a0f 100%);
+            pointer-events: none;
         }
+
+        .bg-glow {
+            position: absolute;
+            width: 600px; height: 300px;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -60%);
+            background: radial-gradient(ellipse, rgba(224,32,32,0.08) 0%, transparent 70%);
+            filter: blur(40px);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: translate(-50%, -60%) scale(1); }
+            50%       { opacity: 1;   transform: translate(-50%, -60%) scale(1.1); }
+        }
+
+        /* ─── Scan lines overlay ─── */
+        .scanlines {
+            position: absolute; inset: 0;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent,
+                transparent 2px,
+                rgba(0,0,0,0.12) 2px,
+                rgba(0,0,0,0.12) 4px
+            );
+            pointer-events: none;
+            opacity: 0.4;
+        }
+
+        /* ─── Main container ─── */
+        .launcher {
+            position: relative;
+            z-index: 10;
+            width: 520px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            -webkit-app-region: no-drag;
+        }
+
+        /* ─── Logo / title ─── */
+        .logo-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 40px;
+            animation: fadeDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo-eyebrow {
+            font-family: 'Orbitron', monospace;
+            font-size: 10px;
+            font-weight: 400;
+            letter-spacing: 6px;
+            color: var(--red);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+
+        .logo-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 52px;
+            font-weight: 900;
+            letter-spacing: -2px;
+            line-height: 1;
+            background: linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0.5) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+            position: relative;
+        }
+
+        .logo-title::after {
+            content: 'J3YCEN GAME';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, var(--red) 0%, transparent 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            opacity: 0;
+            animation: glitchFlash 8s 2s infinite;
+        }
+
+        @keyframes glitchFlash {
+            0%, 94%, 100% { opacity: 0; transform: none; }
+            95%            { opacity: 0.8; transform: translateX(-2px); }
+            96%            { opacity: 0;   transform: translateX(3px); }
+            97%            { opacity: 0.6; transform: translateX(0); }
+        }
+
+        .logo-divider {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .logo-divider-line {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--red), transparent);
+            opacity: 0.5;
+        }
+
+        .logo-divider-dot {
+            width: 4px; height: 4px;
+            border-radius: 50%;
+            background: var(--red);
+            box-shadow: 0 0 8px var(--red);
+        }
+
+        /* ─── Card ─── */
+        .card {
+            width: 100%;
+            background: rgba(10, 12, 20, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            padding: 32px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeUp 0.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, var(--red) 50%, transparent 100%);
+            opacity: 0.6;
+        }
+
+        /* Corner accents */
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 20px; height: 20px;
+            border-top: 2px solid var(--red);
+            border-left: 2px solid var(--red);
+            opacity: 0.7;
+        }
+
+        .corner-br {
+            position: absolute;
+            bottom: 0; right: 0;
+            width: 20px; height: 20px;
+            border-bottom: 2px solid var(--red);
+            border-right: 2px solid var(--red);
+            opacity: 0.7;
+        }
+
+        /* ─── Status area ─── */
+        .status-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .status-indicator {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--text-dim);
+            flex-shrink: 0;
+            transition: all 0.4s ease;
+        }
+
+        .status-indicator.active  { background: var(--red); box-shadow: 0 0 10px var(--red); }
+        .status-indicator.success { background: #2ed573; box-shadow: 0 0 10px #2ed573; }
+        .status-indicator.error   { background: #ffa502; box-shadow: 0 0 10px #ffa502; }
+
+        #status {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            transition: color 0.3s ease;
+        }
+
+        #status.active  { color: var(--text); }
+        #status.success { color: #2ed573; }
+        #status.error   { color: #ffa502; }
+
+        /* ─── Progress bar ─── */
+        .progress-wrap {
+            margin-bottom: 28px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .progress-label-text {
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+
+        #progress-percent {
+            font-family: 'Orbitron', monospace;
+            font-size: 11px;
+            color: var(--red);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        #progress-percent.visible { opacity: 1; }
+
+        .progress-container {
+            width: 100%;
+            height: 3px;
+            background: rgba(255,255,255,0.06);
+            position: relative;
+            overflow: visible;
+        }
+
+        .progress-container::before {
+            content: '';
+            position: absolute;
+            inset: -4px -1px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--red) 0%, #ff6b6b 100%);
+            transition: width 0.3s ease;
+            position: relative;
+            box-shadow: 0 0 12px var(--red-glow), 0 0 4px var(--red);
+        }
+
+        #progress-bar::after {
+            content: '';
+            position: absolute;
+            right: 0; top: -3px;
+            width: 2px; height: 9px;
+            background: white;
+            box-shadow: 0 0 8px white;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        #progress-bar.active::after { opacity: 1; }
+
+        /* ─── Version info ─── */
+        .version-info {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 28px;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+        }
+
+        .version-block { display: flex; flex-direction: column; gap: 3px; }
+
+        .version-label {
+            font-size: 9px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+
+        .version-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 12px;
+            color: var(--text);
+        }
+
+        .version-value.highlight { color: var(--red); }
+
+        /* ─── Button ─── */
+        .btn-wrapper {
+            position: relative;
+        }
+
+        #btn-action {
+            width: 100%;
+            padding: 16px 32px;
+            font-family: 'Orbitron', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: 1px solid var(--red);
+            border-radius: 0;
+            background: transparent;
+            color: var(--red);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            -webkit-app-region: no-drag;
+        }
+
+        #btn-action::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--red);
+            transform: translateX(-101%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        #btn-action:hover:not(:disabled)::before { transform: translateX(0); }
+        #btn-action:hover:not(:disabled) { color: white; box-shadow: 0 0 30px var(--red-glow); }
+
+        #btn-action span { position: relative; z-index: 1; }
+
+        #btn-action:disabled {
+            border-color: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.2);
+            cursor: not-allowed;
+        }
+
+        #btn-action:active:not(:disabled) { transform: scale(0.99); }
+
+        /* ─── Footer ─── */
+        .footer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            opacity: 0.35;
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            animation: fadeUp 0.8s 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .ticker {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ticker-dot {
+            width: 4px; height: 4px;
+            background: var(--red);
+            border-radius: 50%;
+            animation: blink 1.4s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.2; }
+        }
+
     </style>
 </head>
 <body>
-    <h1>J3YCEN GAME</h1>
-    <p id="status">Inizializzazione in corso...</p>
-    
-    <div class="progress-container">
-        <div id="progress-bar" class="progress-bar"></div>
+
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+    <div class="bg-vignette"></div>
+    <div class="scanlines"></div>
+
+    <div class="launcher">
+
+        <div class="logo-area">
+            <div class="logo-eyebrow">// Alpha Build</div>
+            <div class="logo-title">J3YCEN GAME</div>
+            <div class="logo-divider">
+                <div class="logo-divider-line"></div>
+                <div class="logo-divider-dot"></div>
+                <div class="logo-divider-line"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="corner-br"></div>
+
+            <div class="status-row">
+                <div class="status-indicator" id="status-indicator"></div>
+                <div id="status">Inizializzazione in corso...</div>
+            </div>
+
+            <div class="version-info" id="version-info" style="display:none">
+                <div class="version-block">
+                    <div class="version-label">Installata</div>
+                    <div class="version-value" id="v-local">—</div>
+                </div>
+                <div class="version-block">
+                    <div class="version-label">Disponibile</div>
+                    <div class="version-value highlight" id="v-latest">—</div>
+                </div>
+            </div>
+
+            <div class="progress-wrap">
+                <div class="progress-label">
+                    <div class="progress-label-text">Download</div>
+                    <div id="progress-percent">0%</div>
+                </div>
+                <div class="progress-container">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
+            </div>
+
+            <div class="btn-wrapper">
+                <button id="btn-action" disabled><span>Attendi...</span></button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="ticker">
+                <div class="ticker-dot"></div>
+                <span>Sistema Online</span>
+            </div>
+            <span>Launcher v1.0</span>
+        </div>
+
     </div>
 
-    <button id="btn-action" disabled>Attendi...</button>
+    <script>
+        // ─── UI helpers ───────────────────────────────────────────
+        const btnAction    = document.getElementById('btn-action');
+        const statusEl     = document.getElementById('status');
+        const statusDot    = document.getElementById('status-indicator');
+        const progressBar  = document.getElementById('progress-bar');
+        const progressPct  = document.getElementById('progress-percent');
+        const versionInfo  = document.getElementById('version-info');
+        const vLocal       = document.getElementById('v-local');
+        const vLatest      = document.getElementById('v-latest');
 
-    <script src="renderer.js"></script>
+        function setStatus(msg, type = 'active') {
+            statusEl.textContent = msg;
+            statusEl.className   = type;
+            statusDot.className  = `status-indicator ${type}`;
+        }
+
+        function setProgress(p) {
+            progressBar.style.width = p + '%';
+            progressPct.textContent = p + '%';
+            if (p > 0) {
+                progressPct.classList.add('visible');
+                progressBar.classList.add('active');
+            }
+            if (p >= 100) progressBar.classList.remove('active');
+        }
+
+        function setBtnText(txt) {
+            btnAction.querySelector('span').textContent = txt;
+        }
+
+        // ─── Logic (same as original renderer.js) ─────────────────
+        let downloadUrl   = "";
+        let latestVersion = "";
+
+        async function init() {
+            setStatus("Controllo aggiornamenti...", 'active');
+            const info = await window.launcherAPI.checkUpdate();
+
+            if (info.error) {
+                setStatus(info.message, 'error');
+                return;
+            }
+
+            // Show version panel
+            vLocal.textContent  = info.localVersion  || '—';
+            vLatest.textContent = info.latestVersion  || '—';
+            versionInfo.style.display = 'flex';
+
+            if (info.isUpToDate) {
+                setStatus(`Pronto — v${info.localVersion}`, 'success');
+                setProgress(100);
+                setBtnText('Gioca');
+                btnAction.disabled = false;
+                btnAction.onclick  = () => window.launcherAPI.launchGame();
+
+            } else if (info.assetUrl) {
+                downloadUrl   = info.assetUrl;
+                latestVersion = info.latestVersion;
+
+                if (info.localVersion) {
+                    setStatus(`Aggiornamento disponibile`, 'active');
+                    setBtnText('Aggiorna');
+                } else {
+                    setStatus(`Prima installazione`, 'active');
+                    setBtnText('Scarica Gioco');
+                }
+                btnAction.disabled = false;
+                btnAction.onclick  = startDownload;
+
+            } else {
+                setStatus("Nessun asset compatibile trovato.", 'error');
+            }
+        }
+
+        async function startDownload() {
+            btnAction.disabled = true;
+            setStatus("Download in corso...", 'active');
+            setProgress(0);
+
+            window.launcherAPI.onProgress((percent) => {
+                setProgress(percent);
+                setStatus(`Scaricamento... ${percent}%`, 'active');
+            });
+
+            try {
+                await window.launcherAPI.downloadGame(downloadUrl, latestVersion);
+                setStatus("Installazione completata!", 'success');
+                setProgress(100);
+                setBtnText('Gioca Ora');
+                btnAction.disabled = false;
+                btnAction.onclick  = () => window.launcherAPI.launchGame();
+            } catch (err) {
+                setStatus("Errore durante il download.", 'error');
+                btnAction.disabled = false;
+                setBtnText('Riprova');
+            }
+        }
+
+        init();
+    </script>
 </body>
 </html>
